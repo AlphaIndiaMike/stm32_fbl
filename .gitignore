@@ -1,5 +1,13 @@
-# Prerequisites
-*.d
+# STM32CubeMX generated files
+.mxproject
+.cproject
+.project
+.settings/
+
+# Build directory
+/Debug/
+/Release/
+/build/
 
 # Object files
 *.o
@@ -12,17 +20,13 @@
 *.map
 *.exp
 
-# Precompiled Headers
-*.gch
-*.pch
-
 # Libraries
 *.lib
 *.a
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
+# Shared objects
 *.dll
 *.so
 *.so.*
@@ -35,6 +39,7 @@
 *.i*86
 *.x86_64
 *.hex
+*.bin
 
 # Debug files
 *.dSYM/
@@ -50,3 +55,30 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# IDEs and editors
+/.idea
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# STM32CubeIDE specific
+.metadata/
+.settings/
+*.launch
+
+# Keil MDK-ARM specific
+*.uvguix.*
+*.uvoptx
+*.uvprojx
+*.scvd
+*.sct
