@@ -1,8 +1,8 @@
 # STM32CubeMX generated files
-.mxproject
-.cproject
-.project
-.settings/
+#.mxproject
+#.cproject
+#.project
+#.settings/
 
 # Build directory
 /Debug/
@@ -21,10 +21,10 @@
 *.exp
 
 # Libraries
-*.lib
-*.a
-*.la
-*.lo
+#*.lib
+#*.a
+#*.la
+#*.lo
 
 # Shared objects
 *.dll
@@ -70,15 +70,3 @@ dkms.conf
 .Trashes
 ehthumbs.db
 Thumbs.db
-
-# STM32CubeIDE specific
-.metadata/
-.settings/
-*.launch
-
-# Keil MDK-ARM specific
-*.uvguix.*
-*.uvoptx
-*.uvprojx
-*.scvd
-*.sct
