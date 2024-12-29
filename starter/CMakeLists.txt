@@ -96,7 +96,7 @@ if ((CONTROLLER_ID STREQUAL "STM32F746NG_FLASH") OR (CONTROLLER_ID STREQUAL "stm
         set(TARGET_COMPILE_DEFS
             CORE_CM7
             USE_HAL_DRIVER
-            # MANUAL_BOOT_CM4
+            MANUAL_BOOT_CM4
             STM32H755xx
             USE_NUCLEO_64
             $<$<CONFIG:Debug>:DEBUG>

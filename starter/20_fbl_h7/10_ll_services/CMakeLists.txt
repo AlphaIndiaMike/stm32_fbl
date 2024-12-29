@@ -2,8 +2,8 @@
 Component name
 -------------------------------------]]
 
-set(component_name main_component)
-set(component_src main_component_source)
+set(component_name ll_svc_component)
+set(component_src ll_svc_component_source)
 
 message("Compiling ${component_name}, bsp_directory: ${bsp_directory}")
 
@@ -18,13 +18,7 @@ CM4 CORE
 -------------------------------------]]
 
 set(${component_src}                      
-    01_core_m4/Src/main.c
-    01_core_m4/Src/stm32h7xx_hal_msp.c
-    01_core_m4/Src/stm32h7xx_it.c
-    # 01_core_m4/Src/syscalls.c
-    01_core_m4/Src/sysmem.c
-    10_common/Src/system_stm32h7xx_dualcore_boot_cm4_cm7.c
-    ${bsp_directory}/nucleo_h7/stm32h7xx_nucleo.c
+    i2c_svc/Src/i2c_hal_svc.c
 )
 
 set_source_files_properties( ${${component_src}}
@@ -42,7 +36,7 @@ target_include_directories( ${component_name} PRIVATE
     ${bsp_directory}/hal/stm32h7xx-hal-driver/Inc/Config
     ${bsp_directory}/hal/stm32h7xx-hal-driver/Inc
     ${bsp_directory}/nucleo_h7
-    01_core_m4/Inc
+    i2c_svc/Inc
 )
 
 elseif (${CONTROLLER_ID} STREQUAL "stm32h755xx_flash_CM7")
@@ -52,13 +46,8 @@ CM7 CORE
 -------------------------------------]]
 
 set(${component_src}                       
-    02_core_m7/Src/main.c
-    02_core_m7/Src/stm32h7xx_hal_msp.c
-    02_core_m7/Src/stm32h7xx_it.c
-    # 02_core_m7/Src/syscalls.c
-    02_core_m7/Src/sysmem.c
-    10_common/Src/system_stm32h7xx_dualcore_boot_cm4_cm7.c
-    ${bsp_directory}/nucleo_h7/stm32h7xx_nucleo.c
+    display_keyes/Src/display.c
+    i2c_svc/Src/i2c_hal_svc.c
 )
 
 set_source_files_properties( ${${component_src}}
@@ -76,9 +65,8 @@ target_include_directories( ${component_name} PRIVATE
     ${bsp_directory}/hal/stm32h7xx-hal-driver/Inc/Config
     ${bsp_directory}/hal/stm32h7xx-hal-driver/Inc
     ${bsp_directory}/nucleo_h7
-    02_core_m7/Inc
-    ${ll_directory}/display_keyes/Inc
-    ${ll_directory}/i2c_svc/Inc
+    display_keyes/Inc
+    i2c_svc/Inc
 )
 
 endif()

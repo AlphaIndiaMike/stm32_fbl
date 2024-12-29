@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c_hal_svc.h"
+#include "display.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -59,8 +61,13 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/* Global instances */
+I2C_HAL_SVC_t i2cSvc;     // Our I2C service
+Display_t    myDisplay;   // Our display driver
 
 /* USER CODE END 0 */
+
+
 
 /**
   * @brief  The application entry point.
@@ -147,8 +154,48 @@ Error_Handler();
 
   /* Initialize CM4 after all peripherals are initialized in CM7 */
   #ifdef MANUAL_BOOT_CM4
+  #ifdef CM4_ENABLED
   RCC->GCR |= 1 << 3; // boot CM4
   #endif
+  #endif
+
+   /* Initialize our I2C service 
+    * Suppose we want 100 kHz I2C timing on STM32H7. 
+    * Use CubeMX I2C timing calculator or check reference for the correct Timing value.
+    * For example: 0x00C0EAFF might be one typical setting for 100 kHz.
+    */
+  i2c_hal_svc_init(
+      &i2cSvc,
+      I2C1,             // I2C peripheral instance
+      0x00C0EAFF,       // Example timing for 100 kHz on an H7
+      GPIOB, GPIO_PIN_8,  // SCL
+      GPIOB, GPIO_PIN_9   // SDA
+  );
+
+  /* Initialize the display */
+    HAL_StatusTypeDef status = display_init(&myDisplay, &i2cSvc, 0x3F); // I2C address 0x3F
+    if (status != HAL_OK) {
+        // Handle initialization error (e.g., LED indicator, retry, etc.)
+        while(1);
+    }
+
+    /* Clear the display */
+    display_clear(&myDisplay);
+
+    /* Set cursor to line 0, column 0 */
+    display_set_cursor(&myDisplay, 0, 0);
+
+    /* Print a string */
+    display_print_at_cursor(&myDisplay, "Hello, STM32!");
+
+    /* Set cursor to line 1, column 0 */
+    display_set_cursor(&myDisplay, 1, 0);
+
+    /* Print a number */
+    display_print_number(&myDisplay, 12345);
+
+    /* Update the display */
+    display_update(&myDisplay);
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */

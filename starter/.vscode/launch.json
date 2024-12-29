@@ -36,7 +36,9 @@
             // We'll use preLaunchCommands to program both images
             "preLaunchCommands": [
             // 1) Halt M7
+            // Full chip erase command
             "monitor reset halt",
+            //"monitor flash erase_sector 0 0 last",
 
             // 2) Program M7 firmware to 0x08000000
             "monitor program ${workspaceFolder}/build/FBL_STM32_CM7.out verify",
@@ -91,7 +93,7 @@
             "servertype": "openocd",
 
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": "Build Project",
+            "preLaunchTask": "Build CM7 only",
             // M7 firmware path:
             "executable": "${workspaceFolder}/build/FBL_STM32_CM7.out",
             "device": "STM32H755_CM7",
