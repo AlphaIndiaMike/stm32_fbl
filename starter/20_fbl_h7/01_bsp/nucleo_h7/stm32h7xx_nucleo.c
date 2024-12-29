@@ -588,7 +588,7 @@ int32_t BSP_COM_SelectLogPort(COM_TypeDef COM)
   * @brief  Redirect console output to COM
   */
  #ifdef __GNUC__
- int __io_putchar (int ch)
+ __weak int __io_putchar (int ch)
  #else
  int fputc (int ch, FILE *f)
  #endif /* __GNUC__ */

@@ -79,6 +79,8 @@ target_include_directories( ${component_name} PRIVATE
     02_core_m7/Inc
     ${ll_directory}/display_keyes/Inc
     ${ll_directory}/i2c_svc/Inc
+    ${ll_directory}/svo_svc/Inc
+    ${ll_directory}/port_disco_svc/Inc
 )
 
 endif()

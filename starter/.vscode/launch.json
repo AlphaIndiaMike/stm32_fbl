@@ -108,6 +108,22 @@
             // Optional SVD for register view
             "svdFile": "${workspaceFolder}/90_config/20_svd/cmsis-svd-stm32-main/stm32h7/STM32H755_CM7.svd",
 
+            "swoConfig": {
+                "enabled": true,
+                "cpuFrequency": 400000000, /* CPU Frequency - must adapt for other controllers */
+                "swoFrequency": 2000000,
+                "source": "probe",
+                "decoders": [
+                    {
+                        "type": "console",
+                        "label": "ITM",
+                        "showOnStartup": true,
+                        "port": 0,
+                        "encoding": "ascii"
+                    }
+                ]
+            },
+
             "interface": "swd",
             "showDevDebugOutput": "raw"
         }

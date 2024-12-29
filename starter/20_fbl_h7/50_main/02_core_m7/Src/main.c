@@ -20,6 +20,8 @@
 #include "main.h"
 #include "i2c_hal_svc.h"
 #include "display.h"
+#include "svo_svc.h"
+#include "port_disco_svc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -131,6 +133,7 @@ Error_Handler();
 
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
+
   /* USER CODE END 2 */
 
   /* Initialize leds */
@@ -159,43 +162,12 @@ Error_Handler();
   #endif
   #endif
 
-   /* Initialize our I2C service 
-    * Suppose we want 100 kHz I2C timing on STM32H7. 
-    * Use CubeMX I2C timing calculator or check reference for the correct Timing value.
-    * For example: 0x00C0EAFF might be one typical setting for 100 kHz.
-    */
-  i2c_hal_svc_init(
-      &i2cSvc,
-      I2C1,             // I2C peripheral instance
-      0x00C0EAFF,       // Example timing for 100 kHz on an H7
-      GPIOB, GPIO_PIN_8,  // SCL
-      GPIOB, GPIO_PIN_9   // SDA
-  );
+  // Initialize SWO
+  serial_hal_svc_init();
 
-  /* Initialize the display */
-    HAL_StatusTypeDef status = display_init(&myDisplay, &i2cSvc, 0x3F); // I2C address 0x3F
-    if (status != HAL_OK) {
-        // Handle initialization error (e.g., LED indicator, retry, etc.)
-        while(1);
-    }
+  serial_hal_svc_send("Hello, STM32H755 CM7!\n");
 
-    /* Clear the display */
-    display_clear(&myDisplay);
-
-    /* Set cursor to line 0, column 0 */
-    display_set_cursor(&myDisplay, 0, 0);
-
-    /* Print a string */
-    display_print_at_cursor(&myDisplay, "Hello, STM32!");
-
-    /* Set cursor to line 1, column 0 */
-    display_set_cursor(&myDisplay, 1, 0);
-
-    /* Print a number */
-    display_print_number(&myDisplay, 12345);
-
-    /* Update the display */
-    display_update(&myDisplay);
+  display_enabled_pins();
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -207,6 +179,7 @@ Error_Handler();
     HAL_Delay(500);
     BSP_LED_Off(LED_YELLOW);
     HAL_Delay(500);
+    serial_hal_svc_send("CM7 alive!\n");
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

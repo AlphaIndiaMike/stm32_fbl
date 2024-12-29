@@ -48,6 +48,8 @@ CM7 CORE
 set(${component_src}                       
     display_keyes/Src/display.c
     i2c_svc/Src/i2c_hal_svc.c
+    svo_svc/Src/svo_svc.c
+    port_disco_svc/Src/port_disco_svc.c
 )
 
 set_source_files_properties( ${${component_src}}
@@ -67,6 +69,8 @@ target_include_directories( ${component_name} PRIVATE
     ${bsp_directory}/nucleo_h7
     display_keyes/Inc
     i2c_svc/Inc
+    svo_svc/Inc
+    port_disco_svc/Inc
 )
 
 endif()
