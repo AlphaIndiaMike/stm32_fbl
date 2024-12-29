@@ -86,14 +86,52 @@ fi
 # Change to the build directory
 cd "${BUILD_DIR}"
 
-# Configure the project with CMake using the Ninja generator
-echo "Configuring the project with CMake..."
-cmake -G Ninja -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" ${ADDITIONAL_OPTIONS} "${SCRIPT_DIR}"
+# -----------------------------------------------------------------------------
+# 1) Configure for CM7, then immediately build
+# -----------------------------------------------------------------------------
+echo "Configuring the project for CM7..."
+cmake -G Ninja \
+      -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
+      -DBUILD_CM7=ON \
+      -DBUILD_CM4=OFF \
+      ${ADDITIONAL_OPTIONS} \
+      "${SCRIPT_DIR}"
 
-# Build the project using all available CPU cores
+# Build using all available CPU cores
 CPU_CORES=$(sysctl -n hw.ncpu)
-echo "Building the project with ${CPU_CORES} parallel jobs..."
+echo "Building the project (CM7) with ${CPU_CORES} parallel jobs..."
 cmake --build . -- -j"${CPU_CORES}"
+
+# Optionally rename/copy the artifacts so they don't get overwritten
+# if [ -f "FBL_STM32_CM7.hex" ]; then
+#    cp "FBL_STM32_CM7.hex" "FBL_STM32_CM7_${BUILD_TYPE}.hex"
+# fi
+# if [ -f "FBL_STM32_CM7.bin" ]; then
+#    cp "FBL_STM32_CM7.bin" "FBL_STM32_CM7_${BUILD_TYPE}.bin"
+# fi
+
+# -----------------------------------------------------------------------------
+# 2) Reconfigure for CM4, then build
+#    This overwrites the config, so we do it AFTER finishing CM7's build.
+# -----------------------------------------------------------------------------
+echo "Configuring the project for CM4..."
+cmake -G Ninja \
+      -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
+      -DBUILD_CM7=OFF \
+      -DBUILD_CM4=ON \
+      ${ADDITIONAL_OPTIONS} \
+      "${SCRIPT_DIR}"
+
+echo "Building the project (CM4) with ${CPU_CORES} parallel jobs..."
+cmake --build . -- -j"${CPU_CORES}"
+
+# Optionally: rename/copy the artifacts
+# if [ -f "FBL_STM32_CM4.hex" ]; then
+#    cp "FBL_STM32_CM4.hex" "FBL_STM32_CM4_${BUILD_TYPE}.hex"
+# fi
+# if [ -f "FBL_STM32_CM4.bin" ]; then
+#     cp "FBL_STM32_CM4.bin" "FBL_STM32_CM4_${BUILD_TYPE}.bin"
+# fi
 
 # Optionally, you can add an install step if your project supports it
 # echo "Installing the project..."
@@ -101,5 +139,3 @@ cmake --build . -- -j"${CPU_CORES}"
 
 # Inform the user that the build was successful
 echo "Build completed successfully."
-
-# The script ends here, and you remain in the original directory
