@@ -165,8 +165,6 @@ Error_Handler();
   // Initialize SWO
   serial_hal_svc_init();
 
-  serial_hal_svc_send("Hello, STM32H755 CM7!\n");
-
   display_enabled_pins();
 
   /* Infinite loop */
@@ -179,7 +177,6 @@ Error_Handler();
     HAL_Delay(500);
     BSP_LED_Off(LED_YELLOW);
     HAL_Delay(500);
-    serial_hal_svc_send("CM7 alive!\n");
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

@@ -9,7 +9,6 @@
 // Function to check if a GPIO port's clock is enabled
 static int is_gpio_port_enabled(GPIO_TypeDef* port)
 {
-    // Compare the port pointer to known GPIO ports and check corresponding RCC clock enable bits
     if (port == GPIOA)
         return __HAL_RCC_GPIOA_IS_CLK_ENABLED();
     if (port == GPIOB)
@@ -37,20 +36,54 @@ static int is_gpio_port_enabled(GPIO_TypeDef* port)
     return 0;
 }
 
-// Function to get the mode of a specific pin
-static uint32_t get_pin_mode(GPIO_TypeDef* port, int pin)
+// Function to get the mode of a specific pin as a string
+static const char* get_pin_mode(GPIO_TypeDef* port, int pin)
 {
-    return (port->MODER >> (pin * 2)) & 0x3;
+    uint32_t pin_mode = (port->MODER >> (pin * 2)) & 0x3;
+
+    switch(pin_mode)
+    {
+        case GPIO_MODE_INPUT:
+            return "INPUT";
+        case GPIO_MODE_OUTPUT_PP:
+            return "OUTPUT_PP";
+        case GPIO_MODE_OUTPUT_OD:
+            return "OUTPUT_OD";
+        case GPIO_MODE_AF_PP:
+            return "AF_PP";
+        case GPIO_MODE_AF_OD:
+            return "AF_OD";
+        case GPIO_MODE_ANALOG:
+            return "ANALOG";
+        default:
+            return "UNKNOWN";
+    }
 }
 
-// Function to display enabled GPIO ports and their configured pins
+// Function to display enabled GPIO ports and their configured pins with functions
 void display_enabled_pins(void)
 {
-    // Send the initial alive message
-    serial_hal_svc_send("CM7 alive!\n");
+    // Define the "AlphaBoot" ASCII art
+    const char* alpha_boot_art =
+"                                                                                        \n "
+"          d8888 888          888                    888888b.                     888    \n "
+"         d88888 888          888                    888   88b                    888    \n " 
+"        d88P888 888          888                    888  .88P                    888    \n "
+"       d88P 888 888 88888b.  88888b.   8888b.       8888888K.   .d88b.   .d88b.  888888 \n "
+"      d88P  888 888 888  88b 888  88b      88b      888   Y88b d88  88b d88  88b 888    \n "
+"     d88P   888 888 888  888 888  888 .d888888      888    888 888  888 888  888 888    \n "
+"    d8888888888 888 888 d88P 888  888 888  888      888   d88P Y88..88P Y88..88P Y88b.  \n "
+"   d88P     888 888 88888P   888  888  Y888888      8888888P     Y88P     Y88P    Y8888 \n "
+"                    888                                                                 \n "
+"                    888                                                                 \n "
+"                    888                                                                 \n "
+"                                                                                        \n";
+
+    // Send the "AlphaBoot" graphic
+    serial_hal_svc_send(alpha_boot_art);
 
     // Buffer to accumulate the list of enabled ports and their pins
-    char buffer[1024];
+    char buffer[4096]; // Increased buffer size to accommodate detailed output
     size_t offset = 0;
 
     // Start the message with a header
@@ -90,61 +123,73 @@ void display_enabled_pins(void)
         // Check if the GPIO port's clock is enabled
         if(is_gpio_port_enabled(port))
         {
-            // Temporary buffer for the current port's pins
-            char port_buffer[256];
-            size_t port_offset = 0;
+            // Append the port name
+            int written = snprintf(buffer + offset, sizeof(buffer) - offset, "%s:\n", port_name);
+            if(written < 0 || (size_t)written >= sizeof(buffer) - offset)
+            {
+                // If buffer is full or an error occurred, send the current buffer and reset
+                serial_hal_svc_send(buffer);
+                offset = 0;
+                buffer[0] = '\0';
+                // Retry adding the current port after reset
+                written = snprintf(buffer + offset, sizeof(buffer) - offset, "%s:\n", port_name);
+                if(written > 0 && (size_t)written < sizeof(buffer) - offset)
+                {
+                    offset += written;
+                }
+                else
+                {
+                    // If still unable to write, skip to next port
+                    continue;
+                }
+            }
+            else
+            {
+                offset += written;
+            }
 
             // Iterate through each pin (0-15) in the port to check its configuration
             for(int pin = 0; pin < 16; pin++)
             {
-                uint32_t pin_mode = get_pin_mode(port, pin);
+                const char* mode = get_pin_mode(port, pin);
 
-                // Determine if the pin is configured (exclude Analog mode and reset state)
-                // You can adjust these conditions based on what you consider "enabled"
-                if(pin_mode != GPIO_MODE_ANALOG && pin_mode != GPIO_MODE_INPUT)
+                // Define criteria for "configured" pins
+                // Here, all modes except "INPUT", "ANALOG", and "UNKNOWN" are considered configured
+                // Adjust this condition based on your specific requirements
+                if(strcmp(mode, "UNKNOWN") != 0)
                 {
-                    // Append the pin information to the port buffer
-                    int written = snprintf(port_buffer + port_offset, sizeof(port_buffer) - port_offset, "Pin%d, ", pin);
-                    if(written < 0 || (size_t)written >= sizeof(port_buffer) - port_offset)
+                    // Append the pin information on a new line with indentation
+                    written = snprintf(buffer + offset, sizeof(buffer) - offset, "  Pin%d: %s\n", pin, mode);
+                    if(written < 0 || (size_t)written >= sizeof(buffer) - offset)
                     {
-                        // If buffer is full or an error occurred, stop adding more pins
-                        break;
+                        // If buffer is full or an error occurred, send the current buffer and reset
+                        serial_hal_svc_send(buffer);
+                        offset = 0;
+                        buffer[0] = '\0';
+                        // Retry adding the current pin after reset
+                        written = snprintf(buffer + offset, sizeof(buffer) - offset, "  Pin%d: %s\n", pin, mode);
+                        if(written > 0 && (size_t)written < sizeof(buffer) - offset)
+                        {
+                            offset += written;
+                        }
+                        else
+                        {
+                            // If still unable to write, skip to next pin
+                            continue;
+                        }
                     }
                     else
-                    {
-                        port_offset += written;
-                    }
-                }
-            }
-
-            // If any pins were added, format the output
-            if(port_offset > 0)
-            {
-                // Remove the trailing comma and space
-                if(port_offset >= 2)
-                {
-                    port_buffer[port_offset - 2] = '\0';
-                }
-
-                // Append the port and its pins to the main buffer
-                int written = snprintf(buffer + offset, sizeof(buffer) - offset, "%s: %s\n", port_name, port_buffer);
-                if(written < 0 || (size_t)written >= sizeof(buffer) - offset)
-                {
-                    // If buffer is full or an error occurred, send the current buffer and reset
-                    serial_hal_svc_send(buffer);
-                    offset = 0;
-                    buffer[0] = '\0';
-                    // Retry adding the current port after reset
-                    written = snprintf(buffer + offset, sizeof(buffer) - offset, "%s: %s\n", port_name, port_buffer);
-                    if(written > 0 && (size_t)written < sizeof(buffer) - offset)
                     {
                         offset += written;
                     }
                 }
-                else
-                {
-                    offset += written;
-                }
+            }
+
+            // Add an empty line for better readability between ports
+            written = snprintf(buffer + offset, sizeof(buffer) - offset, "\n");
+            if(written > 0 && (size_t)written < sizeof(buffer) - offset)
+            {
+                offset += written;
             }
         }
     }
