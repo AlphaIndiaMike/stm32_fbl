@@ -31,18 +31,7 @@ How to compile:
 Linking
 -------------------------------------]]
 target_link_options(${target} PUBLIC
-    -T${CMAKE_PROJECT_ROOT}/90_config/10_linker/${SYSTEM_LINKER_FILE}
-    --specs=rdimon.specs
-    -mfpu=fpv4-sp-d16
-    -mcpu=cortex-m4
-    -mfloat-abi=hard
-    -mthumb
-    -lc
-    -lm
-    -lnosys
-    -Wl,--print-memory-usage
-    -Wl,-Map=${map_file},--cref
-    -Wl,--gc-sections
+    ${PROJ_TARGET_LINK_OPTIONS}
 )
 
 #[[-----------------------------------
