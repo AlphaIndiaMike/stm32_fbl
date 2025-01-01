@@ -1,5 +1,8 @@
 
 #include "svo_svc.h"
+#include <stdio.h>
+#include <string.h>
+
 /**
  * @brief  Initialize SWO for ITM
  */
@@ -33,6 +36,88 @@ void serial_hal_svc_init(void)
     //Enable ITM input of SWO trace funnel, slave 0
     //SWTF->CTRL bit 0 ENSO = Enable
     *((__IO uint32_t *)(SWTF_BASE + 0x000)) |= 0x00000001; //enable
+}
+
+int intToStrThreadSafe(int number, char *buffer, size_t bufferLen)
+{
+    // Sanity checks
+    if (buffer == NULL || bufferLen == 0) {
+        return -1;  // Failure
+    }
+
+    // We need at least space for one digit + null terminator.
+    // If number is negative, we also need space for the '-' sign.
+    if (bufferLen < 2) {
+        return -1;  // Not enough space even for "0\0"
+    }
+
+    // If the number is zero, just return "0"
+    if (number == 0) {
+        buffer[0] = '0';
+        buffer[1] = '\0';
+        return 0;   // Success
+    }
+
+    int i = 0;
+    int isNegative = 0;
+
+    // Check sign
+    if (number < 0) {
+        isNegative = 1;
+        // WARNING: If number == INT_MIN, doing `-number` could overflow in 32-bit.
+        // For a robust solution, handle INT_MIN explicitly.
+        number = -number;
+    }
+
+    // Convert digits in reverse
+    while (number > 0) {
+        if ((size_t)i >= bufferLen - 1) {
+            // No space left for digit + null terminator
+            return -1;  // Failure
+        }
+        buffer[i++] = (char)('0' + (number % 10));
+        number /= 10;
+    }
+
+    // Add '-' if negative
+    if (isNegative) {
+        if ((size_t)i >= bufferLen - 1) {
+            // No space for '-' + null terminator
+            return -1;  
+        }
+        buffer[i++] = '-';
+    }
+
+    // Add null terminator
+    if ((size_t)i >= bufferLen) {
+        // Just in case
+        return -1;
+    }
+    buffer[i] = '\0';
+
+    // Reverse the string in-place
+    {
+        int start = 0;
+        int end = i - 1;
+        while (start < end) {
+            char tmp = buffer[start];
+            buffer[start] = buffer[end];
+            buffer[end] = tmp;
+            start++;
+            end--;
+        }
+    }
+
+    return 0; // Success
+}
+
+void serial_hal_svc_send_param(const char *message, long long param) {
+    char output[255] = "";
+    char param_str[15] = "";
+    strcat(output, message);
+    intToStrThreadSafe(param,param_str,15);
+    strcat(output, param_str);
+    serial_hal_svc_send(output);
 }
 
 void serial_hal_svc_send(const char *message) {

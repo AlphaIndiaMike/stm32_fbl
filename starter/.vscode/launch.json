@@ -8,7 +8,6 @@
             "name": "Debug_CM7 Dual Core (Start first)",
             "type": "cortex-debug",
             "request": "launch",
-            // We'll spawn OpenOCD for the M7
             "servertype": "openocd",
 
             "cwd": "${workspaceFolder}",
@@ -23,7 +22,7 @@
             "${workspaceFolder}/90_config/30_openocd/tcl/interface/stlink.cfg",
             "${workspaceFolder}/90_config/30_openocd/tcl/target/custom/stm32h755_dual_core.cfg"
             ],
-            // "gdbTarget": "localhost:3333" - doesn't work, check stm32h755_dual_core.cfg
+
             // M7 is typically core #0 in a dual-core script
             "targetId": "0",
 
@@ -35,30 +34,30 @@
 
             // We'll use preLaunchCommands to program both images
             "preLaunchCommands": [
-            // 1) Halt M7
-            // Full chip erase command
-            "monitor reset halt",
-            //"monitor flash erase_sector 0 0 last",
+                // 1) Halt M7
+                "monitor reset halt",
+                // Full chip erase command
+                //"monitor flash erase_sector 0 0 last",
 
-            // 2) Program M7 firmware to 0x08000000
-            "monitor program ${workspaceFolder}/build/FBL_STM32_CM7.out verify",
+                // 2) Program M7 firmware to 0x08000000
+                "monitor program ${workspaceFolder}/build/FBL_STM32_CM7.out verify",
 
-            // 3) Halt M7 again
-            "monitor reset halt",
+                // 3) Halt M7 again
+                "monitor reset halt",
 
-            // 4) Switch to M4 core
-            "monitor targets stm32h7x.cpu1",
-            "monitor reset halt",
+                // 4) Switch to M4 core
+                "monitor targets stm32h7x.cpu1",
+                "monitor reset halt",
 
-            // 5) Program M4 firmware to 0x08100000
-            "monitor program ${workspaceFolder}/build/FBL_STM32_CM4.out verify",
+                // 5) Program M4 firmware to 0x08100000
+                "monitor program ${workspaceFolder}/build/FBL_STM32_CM4.out verify",
 
-            // 6) Halt M4
-            "monitor reset halt",
+                // 6) Halt M4
+                "monitor reset halt",
 
-            // 7) Switch back to M7, ready to debug
-            "monitor targets stm32h7x.cpu0",
-            "monitor reset halt"
+                // 7) Switch back to M7, ready to debug
+                "monitor targets stm32h7x.cpu0",
+                "monitor reset halt"
             ]
         },
         {
@@ -111,7 +110,49 @@
             "swoConfig": {
                 "enabled": true,
                 "cpuFrequency": 400000000, /* CPU Frequency - must adapt for other controllers */
-                "swoFrequency": 2000000,
+                "swoFrequency": 2000000,   /* Debugger Frequency 2MHz !OK! */
+                "source": "probe",
+                "decoders": [
+                    {
+                        "type": "console",
+                        "label": "ITM",
+                        "showOnStartup": true,
+                        "port": 0,
+                        "encoding": "ascii"
+                    }
+                ]
+            },
+
+            "interface": "swd",
+            "showDevDebugOutput": "raw"
+        },
+        {
+            "name": "Debug_CM7_SingleCore (FBL + APP)",
+            "type": "cortex-debug",
+            "request": "launch",
+            // We'll spawn OpenOCD for the M7
+            "servertype": "openocd",
+
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build CM7 only",
+            // M7 firmware path:
+            "executable": "${workspaceFolder}/build/FBL_STM32_CM7.out",
+            "device": "STM32H755_CM7",
+            "runToEntryPoint": "main",
+
+            // Use our stlink.cfg + the new dual-core cfg
+            "configFiles": [
+            "${workspaceFolder}/90_config/30_openocd/tcl/interface/stlink.cfg",
+            "${workspaceFolder}/90_config/30_openocd/tcl/target/stm32h7x.cfg"
+            ],
+
+            // Optional SVD for register view
+            "svdFile": "${workspaceFolder}/90_config/20_svd/cmsis-svd-stm32-main/stm32h7/STM32H755_CM7.svd",
+
+            "swoConfig": {
+                "enabled": true,
+                "cpuFrequency": 400000000, /* CPU Frequency - must adapt for other controllers */
+                "swoFrequency": 2000000,   /* Debugger Frequency 2MHz !OK! */
                 "source": "probe",
                 "decoders": [
                     {

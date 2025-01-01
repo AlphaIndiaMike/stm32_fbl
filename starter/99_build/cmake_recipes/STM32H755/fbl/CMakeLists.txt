@@ -19,7 +19,6 @@ message("*******************************************")
 #[[-----------------------------------
 Project Settings
 -------------------------------------]]
-# We keep these exactly as you had:
 set(CMAKE_PROJECT_NAME          "STM32 FBL")
 set(PROJECT_NAME_EXE            "FBL_STM32")
 set(CMAKE_PROJECT_DESCRIPTION   "FBL project")
@@ -47,15 +46,14 @@ enable_language(ASM)
 # -----------------------------
 # (2) Decide which core to build
 # -----------------------------
-# If user did NOT enable any -DBUILD_CM7=ON or -DBUILD_CM4=ON, default to the old CM7 behavior.
 if (NOT BUILD_CM7 AND NOT BUILD_CM4)
-    set(CONTROLLER_ID "stm32h755xx_flash_CM7")
+    set(CONTROLLER_ID "stm32h755xx_fbl_CM7")
 else()
     # If user tries to enable both, produce an error or pick one
     if (BUILD_CM7 AND BUILD_CM4)
         message(FATAL_ERROR "Please pick only one core for a single build, e.g. -DBUILD_CM7=ON -DBUILD_CM4=OFF.")
     elseif(BUILD_CM7)
-        set(CONTROLLER_ID "stm32h755xx_flash_CM7")
+        set(CONTROLLER_ID "stm32h755xx_fbl_CM7")
     elseif(BUILD_CM4)
         message(FATAL_ERROR "Please pick only CM7, CM4 not supported yet. -DBUILD_CM7=ON -DBUILD_CM4=OFF.")
     endif()
@@ -63,14 +61,6 @@ endif()
 
 message(STATUS "Selected CONTROLLER_ID = ${CONTROLLER_ID}")
 set(PROJECT_NAME_EXE "FBL_STM32_CM7")
-
-message("*******************************************")
-message("Compiler options: ${SYSTEM_COMPILE_OPTIONS}")
-message("*******************************************")
-message("Target compile defs: ${TARGET_COMPILE_DEFS}")
-message("*******************************************")
-message("Linker options: ${LINKER_EXT_OPTIONS}")
-message("*******************************************")
 
 set(SYSTEM_LINKER_FILE "${CONTROLLER_ID}.ld")
 
@@ -118,6 +108,14 @@ set(TARGET_COMPILE_DEFS
     USE_NUCLEO_64
     $<$<CONFIG:Debug>:DEBUG>
 )
+
+message("*******************************************")
+message("Compiler options: ${SYSTEM_COMPILE_OPTIONS}")
+message("*******************************************")
+message("Target compile defs: ${TARGET_COMPILE_DEFS}")
+message("*******************************************")
+message("Linker options: ${PROJ_TARGET_LINK_OPTIONS}")
+message("*******************************************")
 
 #[[-----------------------------------
 Add what to compile

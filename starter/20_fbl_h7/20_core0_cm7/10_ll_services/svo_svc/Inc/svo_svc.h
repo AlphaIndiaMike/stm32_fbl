@@ -14,4 +14,9 @@ void serial_hal_svc_init(void);
  */
 void serial_hal_svc_send(const char *message);
 
+/*
+ * Send a string + numeric parameter over SWO
+ */
+void serial_hal_svc_send_param(const char *message, long long param);
+
 #endif // SERIAL_HAL_SVC_H

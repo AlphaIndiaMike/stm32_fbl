@@ -40,10 +40,8 @@ target_include_directories( ${component_name} PRIVATE
     ${bsp_directory}/hal/stm32h7xx-hal-driver/Inc
     ${bsp_directory}/nucleo_h7
     Inc
-    ${ll_directory}/display_keyes/Inc
-    ${ll_directory}/i2c_svc/Inc
+    ${root_directory_cm7}/01_boot/Inc
     ${ll_directory}/svo_svc/Inc
-    ${ll_directory}/port_disco_svc/Inc
 )
 
 

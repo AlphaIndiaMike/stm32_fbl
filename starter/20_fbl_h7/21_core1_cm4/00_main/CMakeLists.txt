@@ -3,7 +3,7 @@ Component name
 -------------------------------------]]
 
 set(component_name main_component_cm4)
-set(component_src main_component_source)
+set(component_src ${component_name}_source)
 
 message("Compiling ${component_name}, bsp_directory: ${bsp_directory}")
 

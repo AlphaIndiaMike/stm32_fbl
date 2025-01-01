@@ -5,6 +5,7 @@ Set Project Directories
 set(bsp_directory           ${CMAKE_CURRENT_SOURCE_DIR}/01_bsp)
 
 # CORE0 CM7
+set(root_directory_cm7      ${CMAKE_CURRENT_SOURCE_DIR}/20_core0_cm7)
 set(main_directory_cm7      ${CMAKE_CURRENT_SOURCE_DIR}/20_core0_cm7/00_main)
 set(ll_directory            ${CMAKE_CURRENT_SOURCE_DIR}/20_core0_cm7/10_ll_services)
 
@@ -23,6 +24,7 @@ add_subdirectory(${bsp_directory})
 add_subdirectory(${common_directory})
 add_subdirectory(${main_directory_cm7})
 add_subdirectory(${ll_directory})
+add_subdirectory(${root_directory_cm7}/01_boot)
 
 
 #[[-----------------------------------
@@ -34,6 +36,7 @@ add_executable( ${target}
     $<TARGET_OBJECTS:common_component_h7>
     $<TARGET_OBJECTS:main_component_cm7>
     $<TARGET_OBJECTS:ll_svc_component>
+    $<TARGET_OBJECTS:boot_component>
 )
 
 elseif(BUILD_CM4)
