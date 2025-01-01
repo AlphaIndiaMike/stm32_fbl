@@ -62,48 +62,6 @@ else()
 endif()
 
 message(STATUS "Selected CONTROLLER_ID = ${CONTROLLER_ID}")
-
-# -----------------------------
-# (3) Keep your original logic
-#     unchanged below
-# -----------------------------
-
-set(SYSTEM_COMPILE_OPTIONS ${DBG_COMPILE_OPTIONS_M7})
-
-set(PROJ_TARGET_LINK_OPTIONS
-    -T${PROJECT_ROOT}/90_config/10_linker/${SYSTEM_LINKER_FILE}
-    --specs=rdimon.specs
-    -mfpu=fpv4-sp-d16
-    -mcpu=cortex-m4
-    -mfloat-abi=hard
-    -mthumb
-    -lc
-    -lm
-    -lnosys
-    -Wl,--print-memory-usage
-    -Wl,-Map=${map_file},--cref
-    -Wl,--gc-sections
-)
-
-set(LINKER_EXT_OPTIONS
-    -mfpu=fpv4-sp-d16
-    -mcpu=cortex-m7
-    -mfloat-abi=hard
-    -mthumb
-    -lc
-    -lm
-    -lnosys
-    -Wl,--print-memory-usage
-)
-
-set(TARGET_COMPILE_DEFS
-    CORE_CM7
-    USE_HAL_DRIVER
-    MANUAL_BOOT_CM4
-    STM32H755xx
-    USE_NUCLEO_64
-    $<$<CONFIG:Debug>:DEBUG>
-)
 set(PROJECT_NAME_EXE "FBL_STM32_CM7")
 
 message("*******************************************")
@@ -130,6 +88,36 @@ Cmake Settings
 set(CMAKE_SKIP_BUILD_RPATH              FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH      FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH   FALSE)
+
+# -----------------------------
+# Setup compile / linking options
+# -----------------------------
+
+set(SYSTEM_COMPILE_OPTIONS ${DBG_COMPILE_OPTIONS_M7})
+
+set(PROJ_TARGET_LINK_OPTIONS
+    -T${PROJECT_ROOT}/90_config/10_linker/${SYSTEM_LINKER_FILE}
+    --specs=rdimon.specs
+    -mfpu=fpv4-sp-d16
+    -mcpu=cortex-m7
+    -mfloat-abi=hard
+    -mthumb
+    -lc
+    -lm
+    -lnosys
+    -Wl,--print-memory-usage
+    -Wl,-Map=${map_file},--cref
+    -Wl,--gc-sections
+)
+
+set(TARGET_COMPILE_DEFS
+    CORE_CM7
+    USE_HAL_DRIVER
+    MANUAL_BOOT_CM4
+    STM32H755xx
+    USE_NUCLEO_64
+    $<$<CONFIG:Debug>:DEBUG>
+)
 
 #[[-----------------------------------
 Add what to compile
