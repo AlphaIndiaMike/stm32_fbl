@@ -24,6 +24,18 @@
         },
         "problemMatcher": [],
         "detail": "CM7 Build"
+      },
+      {
+        "label": "Build CM7 fbl+asw",
+        "type": "shell",
+        "command": "${workspaceFolder}/build.sh",
+        "args": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": [],
+        "detail": "CM7 Build FBL + ASW"
       }
     ]
   }

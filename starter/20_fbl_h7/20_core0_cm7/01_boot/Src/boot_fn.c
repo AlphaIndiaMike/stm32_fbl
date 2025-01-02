@@ -10,8 +10,6 @@
 #define JUMP_ADDRESS                0x8060000
 
 
-typedef void (*fcnPtr_t)(void);
-
 void show_logo(void)
 {
     // Define the "AlphaBoot" ASCII art
@@ -34,44 +32,97 @@ void show_logo(void)
     serial_hal_svc_send(alpha_boot_art);
 }
 
-
-void fbl_jump_app(const unsigned long address) {
-	volatile fcnPtr_t appl_reset_handler_addr;
-	uint32_t stack_pointer = *(__IO uint32_t*)address; /* VALUE INDICATED BY THE DATA AT ADDRESS IN FLASH */
-
-	// Disable all interrupts
-	__disable_irq();
-
-	// Disable Systick
-	SysTick->CTRL = 0;
-
-	// Set the vector table location
-	SCB->VTOR = address;
-
-	// Initialize user application's Stack Pointer
-	__set_MSP(stack_pointer);
-
-	// Get jump address from the reset vector
-
-	/* The first word (4 bytes) in the vector table is the initial stack pointer value,
-		* and the second word (next 4 bytes) is the address of the reset handler,
-		* which is the entry point of the application.
-		*/
-
-	appl_reset_handler_addr = (fcnPtr_t)(*(__IO uint32_t*)(address + FBL_RESET_HANDLER_OFFSET));
-
-	// Ensure all memory accesses are completed
-	__DSB();
-	__ISB();
-
-	// Jump to application
-	appl_reset_handler_addr();
+// Helper function to clean both caches
+static inline void SCB_CleanInvalidateCache(void) {
+    SCB_CleanDCache();
+    SCB_InvalidateDCache();
+    SCB_InvalidateICache();
 }
 
+void initialize_memory(void) {
+    // First, enable the power interface clock
+    RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;
+    
+    // Configure MPU settings before enabling caches
+    // Disable MPU
+    MPU->CTRL = 0;
+    
+    // Configure MPU regions as needed
+    // Example: Configure region for AXISRAM
+    MPU->RNR = 0;  // Region 0
+    MPU->RBAR = 0x24000000;  // AXI SRAM base address
+    MPU->RASR = (1 << MPU_RASR_ENABLE_Pos) |    // Enable region
+                (0x13 << MPU_RASR_SIZE_Pos) |    // 256KB size
+                (0x3 << MPU_RASR_AP_Pos) |       // Full access (0b011)
+                (1 << MPU_RASR_B_Pos);           // Bufferable
+    
+    // Enable MPU with default memory map as background
+    MPU->CTRL = (1 << MPU_CTRL_ENABLE_Pos) | 
+                (1 << MPU_CTRL_PRIVDEFENA_Pos);
+    
+    // Enable D-Cache and I-Cache
+    SCB_EnableICache();
+    SCB_EnableDCache();
+    
+    // Enable RAM clocks
+    RCC->AHB2ENR |= (RCC_AHB2ENR_SRAM1EN | 
+                     RCC_AHB2ENR_SRAM2EN | 
+                     RCC_AHB2ENR_SRAM3EN);
+    RCC->AHB3ENR |= RCC_AHB3ENR_AXISRAMEN;
+    
+    __DSB();
+    __ISB();
+}
+
+void fbl_jump_app(const unsigned long address) {
+    // Validate the address
+    if ((address & 0xFF000000) != 0x08000000 &&  // Flash
+        (address & 0xFF000000) != 0x24000000) {  // AXISRAM
+        return;  // Invalid address
+    }
+    
+    // Verify stack pointer alignment and range
+    uint32_t stack_pointer = *(volatile uint32_t*)address;
+    if ((stack_pointer & 0x7) != 0 ||  // Must be 8-byte aligned
+        stack_pointer < 0x24000000 ||   // Below AXISRAM
+        stack_pointer > 0x24080000) {   // Above AXISRAM
+        return;  // Invalid stack pointer
+    }
+    
+    uint32_t reset_handler = *(volatile uint32_t*)(address + FBL_RESET_HANDLER_OFFSET);
+
+    // Initialize memory and caches
+    initialize_memory();
+    
+    // Disable all interrupts and SysTick
+    __disable_irq();
+    SysTick->CTRL = 0;
+    
+    // Clear and disable all NVIC interrupts
+    for (int i = 0; i < 8; i++) {
+        NVIC->ICER[i] = 0xFFFFFFFF;
+        NVIC->ICPR[i] = 0xFFFFFFFF;
+    }
+    
+    // Set vector table location
+    SCB->VTOR = address;
+    
+    // Clean caches before jump
+    SCB_CleanInvalidateCache();
+    __DSB();
+    __ISB();
+    
+    // Set stack pointer
+    __set_MSP(stack_pointer);
+    
+    // Jump to application
+    ((void (*)(void))reset_handler)();
+}
 
 void boot_jump_app(void)
 {
     show_logo();
     serial_hal_svc_send_param("Jumping to address: ",JUMP_ADDRESS);
+    serial_hal_svc_send("\n\n");
     fbl_jump_app(JUMP_ADDRESS);
 }

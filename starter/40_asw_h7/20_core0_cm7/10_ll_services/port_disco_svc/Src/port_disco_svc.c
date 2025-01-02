@@ -63,25 +63,6 @@ static const char* get_pin_mode(GPIO_TypeDef* port, int pin)
 // Function to display enabled GPIO ports and their configured pins with functions
 void display_enabled_pins(void)
 {
-    // Define the "AlphaBoot" ASCII art
-    const char* alpha_boot_art =
-"                                                                                        \n "
-"          d8888 888          888                    888888b.                     888    \n "
-"         d88888 888          888                    888   88b                    888    \n " 
-"        d88P888 888          888                    888  .88P                    888    \n "
-"       d88P 888 888 88888b.  88888b.   8888b.       8888888K.   .d88b.   .d88b.  888888 \n "
-"      d88P  888 888 888  88b 888  88b      88b      888   Y88b d88  88b d88  88b 888    \n "
-"     d88P   888 888 888  888 888  888 .d888888      888    888 888  888 888  888 888    \n "
-"    d8888888888 888 888 d88P 888  888 888  888      888   d88P Y88..88P Y88..88P Y88b.  \n "
-"   d88P     888 888 88888P   888  888  Y888888      8888888P     Y88P     Y88P    Y8888 \n "
-"                    888                                                                 \n "
-"                    888                                                                 \n "
-"                    888                                                                 \n "
-"                                                                                        \n";
-
-    // Send the "AlphaBoot" graphic
-    serial_hal_svc_send(alpha_boot_art);
-
     // Buffer to accumulate the list of enabled ports and their pins
     char buffer[4096]; // Increased buffer size to accommodate detailed output
     size_t offset = 0;

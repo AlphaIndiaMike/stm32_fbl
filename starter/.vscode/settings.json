@@ -15,4 +15,5 @@
         "stm32h7xx_hal.h": "c"
     },
     "cmake.sourceDirectory": "/Users/alex/Desktop/AIM/05_Hobby/01_Projects/18_STM32F7_FBL/git/starter/99_build/cmake_recipes/STM32H755/fbl",
+    "cortex-debug.variableUseNaturalFormat": false,
 }

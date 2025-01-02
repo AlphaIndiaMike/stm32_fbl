@@ -40,6 +40,8 @@ void serial_hal_svc_init(void)
 
 int intToStrThreadSafe(int number, char *buffer, size_t bufferLen)
 {
+    #define BASE_NO   16
+
     // Sanity checks
     if (buffer == NULL || bufferLen == 0) {
         return -1;  // Failure
@@ -75,8 +77,8 @@ int intToStrThreadSafe(int number, char *buffer, size_t bufferLen)
             // No space left for digit + null terminator
             return -1;  // Failure
         }
-        buffer[i++] = (char)('0' + (number % 10));
-        number /= 10;
+        buffer[i++] = (char)('0' + (number % BASE_NO));
+        number /= BASE_NO;
     }
 
     // Add '-' if negative

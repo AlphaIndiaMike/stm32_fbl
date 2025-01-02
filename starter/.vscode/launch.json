@@ -134,7 +134,7 @@
             "servertype": "openocd",
 
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": "Build CM7 only",
+            "preLaunchTask": "Build CM7 fbl+asw", // Comment out to save time with builds
             // M7 firmware path:
             "executable": "${workspaceFolder}/build/FBL_STM32_CM7.out",
             "device": "STM32H755_CM7",
@@ -166,7 +166,44 @@
             },
 
             "interface": "swd",
-            "showDevDebugOutput": "raw"
+            "showDevDebugOutput": "raw",
+
+            "preLaunchCommands": [
+                // 1) Reset and halt
+                "monitor reset halt",
+
+                // 2) Flash the FBL at ..
+                "monitor flash write_image erase \"${workspaceFolder}/build/FBL_STM32_CM7.bin\" 0x08000000 bin verify",
+
+                // 3) Flash the App at ..
+                "monitor flash write_image erase \"${workspaceFolder}/build/DEMO_ASW_STM32_CM7.bin\" 0x08060000 bin verify",
+
+                // 4) Tell GDB about the App’s symbols so we can set breakpoints
+                "add-symbol-file \"${workspaceFolder}/build/DEMO_ASW_STM32_CM7.out\" 0x08060000 -s .data 0x24000000",
+
+                 // Make symbol loading more permissive
+                "set auto-load safe-path /",
+                
+                // More aggressive symbol loading
+                "set multiple-symbols ask",
+                
+                // Allow setting breakpoints in pending shared libraries
+                "set breakpoint pending on",
+                
+                // More verbose debugging output
+                "set debug remote 1",
+                
+                // Improve handling of overlapping memory regions
+                "set mem inaccessible-by-default off"
+            ],
+            /*"symbolLoadInfo": {
+                "loadAll": true,
+                "exceptionMask": 0
+            },
+            "postAttachCommands": [
+                "set trust-readonly-sections on",
+                "set mem inaccessible-by-default off"
+            ]*/
         }
     ]
 

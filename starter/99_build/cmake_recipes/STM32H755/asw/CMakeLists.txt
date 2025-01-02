@@ -107,6 +107,7 @@ if (((NOT BUILD_CM7 AND NOT BUILD_CM4)) OR (BUILD_CM7))
         MANUAL_BOOT_CM4
         STM32H755xx
         USE_NUCLEO_64
+        USER_VECT_TAB_ADDRESS
         $<$<CONFIG:Debug>:DEBUG>
     )
 

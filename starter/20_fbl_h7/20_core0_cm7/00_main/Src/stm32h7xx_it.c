@@ -81,16 +81,48 @@ void NMI_Handler(void)
 /**
   * @brief This function handles Hard fault interrupt.
   */
-void HardFault_Handler(void)
-{
-  /* USER CODE BEGIN HardFault_IRQn 0 */
+// Structure to hold the stack frame at the time of the HardFault
+typedef struct {
+    uint32_t r0;
+    uint32_t r1;
+    uint32_t r2;
+    uint32_t r3;
+    uint32_t r12;
+    uint32_t lr;   // Link register
+    uint32_t pc;   // Program counter
+    uint32_t psr;  // Program status register
+} HardFaultStackFrame;
 
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
-  }
+// Global variable to store fault information
+volatile HardFaultStackFrame* fault_stack_frame;
+volatile uint32_t hardfault_cfsr;
+volatile uint32_t hardfault_hfsr;
+volatile uint32_t hardfault_mmfar;
+volatile uint32_t hardfault_bfar;
+
+void HardFault_Handler(void) __attribute__((naked));
+void HardFault_Handler(void) {
+    __asm volatile(
+        "TST LR, #4                \n" // Test EXC_RETURN bit 2
+        "ITE EQ                    \n" // If equal (EXC_RETURN indicates MSP), use MSP
+        "MRSEQ R0, MSP             \n" // Main Stack Pointer
+        "MRSNE R0, PSP             \n" // Process Stack Pointer
+        "B HardFault_HandlerC      \n" // Branch to C handler
+    );
+}
+
+void HardFault_HandlerC(HardFaultStackFrame* stack_frame) {
+    // Capture stack frame
+    fault_stack_frame = stack_frame;
+
+    // Capture fault status registers
+    hardfault_cfsr = SCB->CFSR;     // Configurable Fault Status Register
+    hardfault_hfsr = SCB->HFSR;     // HardFault Status Register
+    hardfault_mmfar = SCB->MMFAR;   // Memory Management Fault Address Register
+    hardfault_bfar = SCB->BFAR;     // Bus Fault Address Register
+
+    // Optional: Implement breakpoint or logging here
+    while (1);  // Stay here for debugging
 }
 
 /**

@@ -129,7 +129,7 @@ Error_Handler();
 
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
-
+  __enable_irq();
   /* USER CODE END 2 */
 
   /* Initialize leds */
@@ -139,17 +139,6 @@ Error_Handler();
 
   /* Initialize USER push-button, will be used to trigger an interrupt each time it's pressed.*/
   BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
-
-  /* Initialize COM1 port (115200, 8 bits (7-bit data + 1 stop bit), no parity */
-  BspCOMInit.BaudRate   = 115200;
-  BspCOMInit.WordLength = COM_WORDLENGTH_8B;
-  BspCOMInit.StopBits   = COM_STOPBITS_1;
-  BspCOMInit.Parity     = COM_PARITY_NONE;
-  BspCOMInit.HwFlowCtl  = COM_HWCONTROL_NONE;
-  if (BSP_COM_Init(COM1, &BspCOMInit) != BSP_ERROR_NONE)
-  {
-    Error_Handler();
-  }
 
   /* Initialize CM4 after all peripherals are initialized in CM7 */
   #ifdef MANUAL_BOOT_CM4
